@@ -1,0 +1,41 @@
+name: Build APK
+
+# Se lance automatiquement a chaque envoi de fichiers (push), et peut aussi
+# etre relance manuellement depuis l'onglet "Actions" de GitHub (bouton
+# "Run workflow") sans avoir a re-envoyer les fichiers.
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Recuperer le projet
+        uses: actions/checkout@v4
+
+      - name: Decompresser project.zip
+        run: unzip -o project.zip -d .
+
+      - name: Installer Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Installer le SDK Android
+        uses: android-actions/setup-android@v3
+
+      - name: Installer Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: 8.7
+
+      - name: Compiler l'APK
+        run: gradle assembleDebug
+
+      - name: Publier l'APK compile
+        uses: actions/upload-artifact@v4
+        with:
+          name: IVINDO_PRINT_Agent-app-debug
+          path: app/build/outputs/apk/debug/app-debug.apk
